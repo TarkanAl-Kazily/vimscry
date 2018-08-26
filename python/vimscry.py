@@ -28,9 +28,9 @@ class VimScry(object):
             self.setup()
         query = query.lower()
         res = self.hist.get_search(query)
-        if res:
+        if res and res["object"] == "list" and res["total_cards"] == len(res["data"]):
             return res
-        res = self.searcher.search(query)
+        res = self.searcher.search_confirm(query)
         self.hist.save_search(res)
         self.hist.save()
         return res
@@ -59,7 +59,7 @@ class VimScry(object):
         else:
             self.create_buffer()
             if res["object"] == "list":
-                self.buf[0] = '{} cards found for query "{}"'.format(res["total_cards"], res["query"])
+                self.buf[0] = '{} cards found for query `{}`'.format(res["total_cards"], res["query"])
                 for c in res["data"]:
                     buf = vim.current.buffer
                     buf.append(c["name"])

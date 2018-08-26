@@ -4,10 +4,12 @@ import json
 from datetime import date
 import queue
 import threading
+import socket
+import vim
 
 class Search(object):
     """Handles accessing scryfall for new data"""
-    def __init__(self, delay=0.1, timeout=0.1):
+    def __init__(self, delay=0.1, timeout=0.06, url_timeout=15):
         self.api = "https://api.scryfall.com"
         self.encoding = "utf-8"
         self.delay = delay
@@ -15,6 +17,7 @@ class Search(object):
         self.out = queue.SimpleQueue()
         self.thread = None
         self.timeout = timeout
+        self.url_timeout = url_timeout
 
     def _url_search(self, query):
         """Returns a url corresponding to the search query"""
@@ -37,10 +40,19 @@ class Search(object):
 
     def _download(self, url):
         try:
-            handle = request.urlopen(url)
+            handle = request.urlopen(url, timeout=self.url_timeout)
             return json.loads(handle.read().decode(self.encoding))
         except error.HTTPError as e:
             return json.loads(e.read().decode(self.encoding))
+        except socket.timeout as e:
+            result = {
+                    "object" : "error",
+                    "details": "Socket timed out",
+                    "status": "NA",
+                    "code" : "socket timed out",
+                    }
+            return result
+
 
     def _fetch(self, url):
         self.work.put(url)
@@ -76,6 +88,46 @@ class Search(object):
                 "date" : str(date.today())
                 }
         return result
+
+    def search_confirm(self, query):
+        """Performs a search on scryfall, but provides the user the option to abort"""
+        url = self._url_search(query)
+        page = self._fetch(url)
+        if page["object"] == "error":
+            page["url"] = url
+            page["query"] = query
+            page["date"] = str(date.today())
+            return page
+        cards = page["data"]
+        result = {
+                "object" : "list",
+                "query" : query,
+                "url" : url,
+                "total_cards" : page["total_cards"],
+                "data" : cards,
+                "date" : str(date.today())
+                }
+        if page["has_more"]:
+            if vim.eval('confirm("Found {} cards. Continue?", "&Yes\n&No", 1)'.format(page["total_cards"])) == '1':
+                while page["has_more"]:
+                    page = self._fetch(page["next_page"])
+                    if page["object"] == "error":
+                        page["url"] = url
+                        page["query"] = query
+                        page["date"] = str(date.today())
+                        return page
+                    cards += page["data"]
+            else:
+                more = {
+                        "object" : "card",
+                        "name" : "===== List continues... =====",
+                        "type" : "NA",
+                        "cmc" : "NA"
+                        }
+                cards.append(more)
+        return result
+
+
 
     def random(self):
         """Performs random on scryfall - return Card"""
