@@ -39,9 +39,7 @@ class VimScry(object):
         vim.command("set switchbuf +=useopen")
         if not self.buf:
             vim.command("vnew")
-            vim.command("setlocal buftype=nofile")
-            vim.command("setlocal bufhidden=hide")
-            vim.command("setlocal noswapfile")
+            vim.command("set filetype=vimscry")
             self.buf = vim.current.buffer
             self.buf.name = self.buf_name
         else:
@@ -58,13 +56,11 @@ class VimScry(object):
             print("Error:", res["details"])
         else:
             self.create_buffer()
-            if res["object"] == "list":
-                self.buf[0] = '{} cards found for query `{}`'.format(res["total_cards"], res["query"])
-                for c in res["data"]:
-                    buf = vim.current.buffer
-                    buf.append(c["name"])
-            if res["object"] == "card":
-                buf.append(res["name"])
-                del buf[0]
+            self.buf[0] = '{} cards found for query `{}`'.format(res["total_cards"], res["query"])
+            for c in res["data"]:
+                self.buf.append(c["name"])
+                face = str(Formatter(c))
+                for line in face.splitlines():
+                    self.buf.append(" | " + line)
 
 scry = VimScry()

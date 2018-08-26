@@ -13,7 +13,6 @@ class Formatter(object):
     def __init__(self, obj, indent=4, width=70):
         self.obj = obj
         self.type = obj["object"]
-        self.date = obj["date"]
         self.indent = ' ' * indent
         self.width = width
 
@@ -36,11 +35,6 @@ class Formatter(object):
         if oracle:
             res += textwrap.fill(oracle, width=self.width)
             res += "\n"
-        flavor = face.get("flavor_text", None)
-        if flavor:
-            res += '-' * (int(self.width/4)) + '\n'
-            res += textwrap.fill(flavor, width=self.width)
-            res += "\n"
         power = face.get("power", None)
         toughness = face.get("toughness", None)
         loyalty = face.get("loyalty", None)
@@ -48,6 +42,11 @@ class Formatter(object):
             res += "{}/{}\n".format(power, toughness)
         elif loyalty:
             res += "{}\n".format(loyalty)
+        flavor = face.get("flavor_text", None)
+        if flavor:
+            res += '-' * (int(self.width/4)) + '\n'
+            res += textwrap.fill(flavor, width=self.width)
+            res += "\n"
         res += self.obj["scryfall_uri"] + "\n"
         return res
 
