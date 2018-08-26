@@ -27,8 +27,11 @@ function! Scry(query)
     python3 vimscry.scry.scry()
 endfunction
 
+function! OpenCardUrl()
+    python3 vimscry.scry.open_card_url()
+endfunction
+
 command! -nargs=0 RandomCard call RandomCard()
 command! -nargs=0 InsertRandomCard call InsertRandomCard()
 command! -nargs=1 Scry call Scry(<q-args>)
-
 let g:vimscry = 1

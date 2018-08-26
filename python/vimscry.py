@@ -3,6 +3,7 @@ from search import Search
 from formatter import Formatter, display
 import vim
 import sys
+import webbrowser
 
 class VimScry(object):
 
@@ -44,8 +45,9 @@ class VimScry(object):
             self.buf.name = self.buf_name
         else:
             vim.command("vert sbuffer {}".format(self.buf_name))
+        vim.command("setlocal ma")
         self.buf[:] = None
-        vim.command("vertical resize 80")
+        vim.current.window.width = 80
 
     def scry(self):
         """Performs a search, and opens a new window (split vertically) with the results.
@@ -62,5 +64,26 @@ class VimScry(object):
                 face = str(Formatter(c))
                 for line in face.splitlines():
                     self.buf.append(" | " + line)
+            vim.command("setlocal noma")
+
+    def open_card_url(self):
+        """Opens the current card in a web browser"""
+        if vim.current.buffer != self.buf:
+            return
+        row, col = vim.current.window.cursor
+        if row == 1:
+            print("No card selected")
+            return
+        line = self.buf[row-1]
+        while not 'https://scryfall.com' in line:
+            row += 1
+            line = self.buf[row-1]
+        try:
+            url_start = line.index('https://scryfall.com')
+            webbrowser.open(line[url_start:])
+        except ValueError as e:
+            print("No url found")
+        except webbrowser.Error as e:
+            print("Error opening url")
 
 scry = VimScry()
