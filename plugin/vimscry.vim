@@ -31,6 +31,10 @@ function! OpenCardUrl()
     python3 vimscry.scry.open_card_url()
 endfunction
 
+function! CopyCardName()
+    python3 vimscry.scry.copy_card_name()
+endfunction
+
 command! -nargs=0 RandomCard call RandomCard()
 command! -nargs=0 InsertRandomCard call InsertRandomCard()
 command! -nargs=1 Scry call Scry(<q-args>)

@@ -86,4 +86,22 @@ class VimScry(object):
         except webbrowser.Error as e:
             print("Error opening url")
 
+    def copy_card_name(self):
+        """Copies the name of the current card"""
+        if vim.current.buffer != self.buf:
+            return
+        row, col = vim.current.window.cursor
+        oldrow = row
+        if row == 1:
+            print("No card selected")
+            return
+        line = self.buf[row-1]
+        while len(line) > 3 and line[0:3] == " | ":
+            row -= 1
+            line = self.buf[row-1]
+        vim.current.window.cursor = row, 1
+        vim.command("normal! Y")
+        vim.current.window.cursor = oldrow, col
+        print(line, "copied to the default register")
+
 scry = VimScry()
