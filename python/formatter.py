@@ -1,5 +1,8 @@
 import textwrap
 
+def display(result):
+    print(str(Formatter(result)))
+
 class FormatException(Exception):
     def __init__(self, message):
         self.message = message

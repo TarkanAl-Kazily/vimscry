@@ -3,7 +3,7 @@ import argparse
 import sys
 from cache import Cache
 from search import Search
-from formatter import Formatter
+from formatter import Formatter, display
 
 hist = Cache()
 scry = Search()
@@ -16,9 +16,6 @@ def search(query):
     hist.save_search(res)
     hist.save()
     return res
-
-def display(result):
-    print(str(Formatter(result)))
 
 def arguments():
     parser = argparse.ArgumentParser(description="Perform Scryfall card searches")
