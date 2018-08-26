@@ -7,13 +7,14 @@ import threading
 
 class Search(object):
     """Handles accessing scryfall for new data"""
-    def __init__(self, delay=0.1):
+    def __init__(self, delay=0.1, timeout=0.1):
         self.api = "https://api.scryfall.com"
         self.encoding = "utf-8"
         self.delay = delay
         self.work = queue.SimpleQueue()
         self.out = queue.SimpleQueue()
-        self.thread = threading.Thread(target=self._worker)
+        self.thread = None
+        self.timeout = timeout
 
     def _url_search(self, query):
         """Returns a url corresponding to the search query"""
@@ -27,11 +28,12 @@ class Search(object):
 
     def _worker(self):
         while True:
-            url = self.work.get()
-            if url is None:
+            try:
+                url = self.work.get(timeout=self.timeout)
+                self.out.put(self._download(url))
+                time.sleep(self.delay)
+            except queue.Empty as e:
                 break
-            self.out.put(self._download(url))
-            time.sleep(self.delay)
 
     def _download(self, url):
         try:
@@ -41,9 +43,9 @@ class Search(object):
             return json.loads(e.read().decode(self.encoding))
 
     def _fetch(self, url):
-        if not self.thread.is_alive():
-            self.thread.start()
         self.work.put(url)
+        if not self.thread or not self.thread.is_alive():
+            self.thread = threading.Thread(target=self._worker())
         return self.out.get()
 
     def search(self, query):
