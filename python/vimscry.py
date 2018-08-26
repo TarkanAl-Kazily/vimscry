@@ -10,6 +10,7 @@ class VimScry(object):
         self.hist = None
         self.searcher = None
         self.buf_name = "VimScry"
+        self.buf = None
         self.initialized = False
 
     def setup(self):
@@ -25,7 +26,7 @@ class VimScry(object):
     def search(self, query):
         if not self.initialized:
             self.setup()
-        query.lower()
+        query = query.lower()
         res = self.hist.get_search(query)
         if res:
             return res
@@ -36,17 +37,16 @@ class VimScry(object):
 
     def create_buffer(self):
         vim.command("set switchbuf +=useopen")
-        if not self.buf_name:
+        if not self.buf:
             vim.command("vnew")
-            vim.current.buffer.name = self.buf_name
             vim.command("setlocal buftype=nofile")
             vim.command("setlocal bufhidden=hide")
             vim.command("setlocal noswapfile")
+            self.buf = vim.current.buffer
+            self.buf.name = self.buf_name
         else:
-            vim.command("sbuffer {}".format(self.buf_name))
-        buf = vim.current.buffer
-        # Clear buffer
-        buf[:] = None
+            vim.command("vert sbuffer {}".format(self.buf_name))
+        self.buf[:] = None
         vim.command("vertical resize 80")
 
     def scry(self):
@@ -59,12 +59,12 @@ class VimScry(object):
         else:
             self.create_buffer()
             if res["object"] == "list":
-                #print("Cards found:", res["total_cards"])
+                self.buf[0] = '{} cards found for query "{}"'.format(res["total_cards"], res["query"])
                 for c in res["data"]:
                     buf = vim.current.buffer
                     buf.append(c["name"])
             if res["object"] == "card":
-                #print("Cards found:", 1)
                 buf.append(res["name"])
+                del buf[0]
 
 scry = VimScry()
