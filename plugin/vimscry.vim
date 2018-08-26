@@ -20,15 +20,11 @@ import vimscry
 EOF
 
 function! RandomCard()
-    python3 vimscry.random_card()
-endfunction
-
-function! InsertRandomCard()
-    python3 vimscry.insert_random_card()
+    python3 vimscry.scry.random_card()
 endfunction
 
 function! Scry(query)
-    python3 vimscry.scry()
+    python3 vimscry.scry.scry()
 endfunction
 
 command! -nargs=0 RandomCard call RandomCard()
