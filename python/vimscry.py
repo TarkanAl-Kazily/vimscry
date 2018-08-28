@@ -86,22 +86,30 @@ class VimScry(object):
         except webbrowser.Error as e:
             print("Error opening url")
 
-    def copy_card_name(self):
+    def copy_card_names(self):
         """Copies the name of the current card"""
         if vim.current.buffer != self.buf:
             return
-        row, col = vim.current.window.cursor
-        oldrow = row
-        if row == 1:
+        start = int(vim.eval('a:firstline'))
+        end = int(vim.eval('a:lastline'))
+        pos = vim.current.window.cursor
+        if start == 1 and end == 1:
             print("No card selected")
             return
-        line = self.buf[row-1]
-        while len(line) > 3 and line[0:3] == " | ":
-            row -= 1
-            line = self.buf[row-1]
-        vim.current.window.cursor = row, 1
-        vim.command("normal! Y")
-        vim.current.window.cursor = oldrow, col
-        print(line, "copied to the default register")
+        card_names = []
+        for row in range(start, 0, -1):
+            if not self.buf[row][0:3] == " | ":
+                card_names.append(self.buf[row])
+                break
+        for card in self.buf[start:end]:
+            if not card[0:3] == " | ":
+                card_names.append(card)
+        vim.command("setlocal ma")
+        for card in reversed(card_names):
+            self.buf.append(card, 0)
+        vim.command('silent 1,{}d'.format(len(card_names)))
+        vim.command("setlocal noma")
+        vim.current.window.cursor = pos
+        print("{} cards copied".format(len(card_names)))
 
 scry = VimScry()
