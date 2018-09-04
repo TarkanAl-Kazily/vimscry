@@ -4,6 +4,7 @@ from formatter import Formatter, display
 import vim
 import sys
 import webbrowser
+import random
 
 class VimScry(object):
 
@@ -23,7 +24,7 @@ class VimScry(object):
     def random_card(self):
         if not self.initialized:
             self.setup()
-        print("Not yet implemented")
+        print(str(Formatter(random.choice(self.database.data()))))
 
     def search(self, query, extras=False):
         if not self.initialized:

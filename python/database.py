@@ -61,7 +61,6 @@ class Database(object):
         self.thread = None
 
     def check_bulk_info(self):
-        start_time = time.time()
         if os.path.exists(self.bulk_info):
             with open(self.bulk_info, 'r') as f:
                 cur_info = json.load(f)
@@ -80,7 +79,6 @@ class Database(object):
             self.update_bulk_info(None)
         if not os.path.exists(self.bulk_data):
             self.update_bulk_data()
-        print("Bulk data updated in {} seconds".format(time.time() - start_time))
 
     def update_bulk_info(self, old_date):
         new_info = self._fetch(self.api_bulk_info)
@@ -109,12 +107,10 @@ class Database(object):
         print("Bulk data downloaded and saved in {} seconds".format(time.time() - start_time))
 
     def load(self):
-        start_time = time.time()
         self.check_bulk_info()
         if self.bulk_data_json is None:
             with open(self.bulk_data, 'r') as f:
                 self.bulk_data_json = json.load(f)
-        print("Loaded database in {} seconds".format(time.time() - start_time))
 
     def data(self):
         return self.bulk_data_json

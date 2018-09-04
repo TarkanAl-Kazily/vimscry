@@ -35,6 +35,14 @@ function! CopyCardName() range
     python3 vimscry.scry.copy_card_names()
 endfunction
 
+function! AddCard() range
+    python3 vimscry.scry.copy_card_names()
+    wincmd w
+    normal! G
+    normal! p
+    wincmd w
+endfunction
+
 command! -nargs=0 RandomCard call RandomCard()
 command! -nargs=0 InsertRandomCard call InsertRandomCard()
 command! -nargs=1 Scry call Scry(<q-args>)
