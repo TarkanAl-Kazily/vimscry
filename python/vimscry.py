@@ -1,5 +1,5 @@
-from cache import Cache
-from search import Search
+from database import Database
+from parser import QueryParser
 from formatter import Formatter, display
 import vim
 import sys
@@ -8,32 +8,30 @@ import webbrowser
 class VimScry(object):
 
     def __init__(self):
-        self.hist = None
-        self.searcher = None
+        self.database = None
         self.buf_name = "VimScry"
         self.buf = None
+        self.qp = None
         self.initialized = False
 
     def setup(self):
-        self.hist = Cache()
-        self.searcher = Search()
+        self.database = Database()
+        self.database.load()
+        self.qp = QueryParser()
         self.initialized = True
 
     def random_card(self):
         if not self.initialized:
             self.setup()
-        print(str(Formatter(self.searcher.random())))
+        print("Not yet implemented")
 
-    def search(self, query):
+    def search(self, query, extras=False):
         if not self.initialized:
             self.setup()
-        query = query.lower()
-        res = self.hist.get_search(query)
-        if res and res["object"] == "list" and res["total_cards"] == len(res["data"]):
-            return res
-        res = self.searcher.search_confirm(query)
-        self.hist.save_search(res)
-        self.hist.save()
+        if not extras:
+            query = "-(layout:planar or layout:scheme or layout:vanguard or layout:token or layout:emblem) ({})".format(query)
+        n = self.qp.parse(query)
+        res = [ c for c in self.database.data() if n.verify(c) ]
         return res
 
     def create_buffer(self):
@@ -54,17 +52,14 @@ class VimScry(object):
         Prints any errors out."""
         query = vim.eval("a:query")
         res = self.search(query)
-        if res["object"] == "error":
-            print("Error:", res["details"])
-        else:
-            self.create_buffer()
-            self.buf[0] = '{} cards found for query `{}`'.format(res["total_cards"], res["query"])
-            for c in res["data"]:
-                self.buf.append(c["name"])
-                face = str(Formatter(c))
-                for line in face.splitlines():
-                    self.buf.append(" | " + line)
-            vim.command("setlocal noma")
+        self.create_buffer()
+        self.buf[0] = '{} cards found for query `{}`'.format(len(res), query)
+        for c in res:
+            self.buf.append(c["name"])
+            face = str(Formatter(c))
+            for line in face.splitlines():
+                self.buf.append(" | " + line)
+        vim.command("setlocal noma")
 
     def open_card_url(self):
         """Opens the current card in a web browser"""
@@ -96,6 +91,8 @@ class VimScry(object):
         if start == 1 and end == 1:
             print("No card selected")
             return
+        if start == 1:
+            start = 2
         card_names = []
         for row in range(start, 0, -1):
             if not self.buf[row][0:3] == " | ":
