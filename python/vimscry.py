@@ -18,7 +18,7 @@ class VimScry(object):
         self.cache_path = cache_path
 
     def setup(self):
-        self.database = Database()
+        self.database = Database(cache_dir=self.cache_path)
         self.database.load()
         self.qp = QueryParser()
         self.initialized = True
