@@ -5,15 +5,17 @@ import vim
 import sys
 import webbrowser
 import random
+from os.path import join
 
 class VimScry(object):
 
-    def __init__(self):
+    def __init__(self, cache_path):
         self.database = None
         self.buf_name = "VimScry"
         self.buf = None
         self.qp = None
         self.initialized = False
+        self.cache_path = cache_path
 
     def setup(self):
         self.database = Database()
@@ -110,4 +112,6 @@ class VimScry(object):
         vim.current.window.cursor = pos
         print("{} cards copied".format(len(card_names)))
 
-scry = VimScry()
+cache_dir = join(vim.eval('s:plugin_root_dir'), '..', '_cache')
+
+scry = VimScry(cache_dir)
