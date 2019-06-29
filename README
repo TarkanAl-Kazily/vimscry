@@ -1,8 +1,0 @@
-# VimScry
-
-A Magic the Gathering plugin for vim.
-
-VimScry combines the power of Vim, with the utility of Scryfall, making a simple
-deckbuilding experience. Decks are collections of cards, represented by names
-in even the most advanced deck trackers. So now you can have built in Scryfall
-integration from within your text editor.
