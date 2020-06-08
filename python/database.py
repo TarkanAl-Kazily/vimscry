@@ -72,7 +72,6 @@ class Database(object):
             if not bulk_database_info:
                 raise DatabaseError("{} not found in bulk-data".format(self.bulk_database))
             old_date = date.fromisoformat(bulk_database_info["updated_at"][:10])
-            self.bulk_data_uri = bulk_database_info["permalink_uri"]
             if old_date < date.today():
                 self.update_bulk_info(old_date)
         else:
@@ -92,7 +91,7 @@ class Database(object):
         if not bulk_database_info:
             raise DatabaseError("{} not found in bulk-data".format(self.bulk_database))
         if old_date is None or old_date < date.fromisoformat(bulk_database_info["updated_at"][:10]):
-            self.bulk_data_uri = bulk_database_info["permalink_uri"]
+            self.bulk_data_uri = bulk_database_info["download_uri"]
             self.update_bulk_data()
         with open(self.bulk_info, 'w') as f:
             json.dump(new_info, f)
